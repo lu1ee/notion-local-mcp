@@ -1,11 +1,26 @@
-import { queryBlock, queryBlocks, type BlockRow } from '../database.js';
-import { extractTitle, extractAllText, formatTimestamp, createNotionUrl } from '../parser.js';
+import { queryBlock, queryBlocks, queryCollection, type BlockRow } from '../database.js';
+import {
+  extractTitle,
+  extractAllText,
+  formatTimestamp,
+  createNotionUrl,
+  parseSchema,
+  parseProperties,
+  formatSchemaForDisplay,
+  type ParsedProperties,
+} from '../parser.js';
 
 export interface BlockContent {
   id: string;
   type: string;
   text: string;
   children?: BlockContent[];
+}
+
+export interface DatabaseInfo {
+  collectionId: string;
+  collectionName: string;
+  schema: Record<string, { type: string; options?: string[] }> | null;
 }
 
 export interface PageContent {
@@ -15,6 +30,9 @@ export interface PageContent {
   lastEdited: string;
   url: string;
   content: BlockContent[];
+  // Database page specific fields
+  database?: DatabaseInfo;
+  properties?: ParsedProperties | null;
 }
 
 export interface GetPageParams {
@@ -64,16 +82,19 @@ export function getPage(params: GetPageParams): PageContent {
   // Normalize the ID (remove dashes if present)
   const normalizedId = pageId.replace(/-/g, '');
 
-  // Try to find the page with or without dashes
+  // Try to find the page with or without dashes, including collection_id
   const sql = `
-    SELECT id, type, properties, last_edited_time
+    SELECT id, type, properties, last_edited_time, collection_id, parent_id, parent_table
     FROM block
     WHERE (id = ? OR REPLACE(id, '-', '') = ?)
       AND alive = 1
     LIMIT 1
   `;
 
-  const page = queryBlock(sql, [pageId, normalizedId]);
+  const page = queryBlock(sql, [pageId, normalizedId]) as BlockRow & {
+    collection_id?: string;
+    parent_table?: string;
+  } | undefined;
 
   if (!page) {
     throw new Error(`Page not found: ${pageId}`);
@@ -81,7 +102,7 @@ export function getPage(params: GetPageParams): PageContent {
 
   const content = getChildBlocks(page.id, 0, depth);
 
-  return {
+  const result: PageContent = {
     id: page.id,
     title: extractTitle(page.properties),
     type: page.type,
@@ -89,11 +110,32 @@ export function getPage(params: GetPageParams): PageContent {
     url: createNotionUrl(page.id),
     content,
   };
+
+  // Check if this is a database page (has collection_id or parent is collection)
+  const collectionId = page.collection_id || (page.parent_table === 'collection' ? page.parent_id : null);
+
+  if (collectionId) {
+    const collection = queryCollection(collectionId);
+
+    if (collection) {
+      const schema = parseSchema(collection.schema);
+
+      result.database = {
+        collectionId: collection.id,
+        collectionName: extractTitle(collection.name),
+        schema: formatSchemaForDisplay(schema),
+      };
+
+      result.properties = parseProperties(page.properties, schema);
+    }
+  }
+
+  return result;
 }
 
 export const getPageToolDefinition = {
   name: 'notion_local_get_page',
-  description: 'Get the full content of a Notion page including all blocks',
+  description: 'Get the full content of a Notion page including all blocks. For database pages, also returns the schema and parsed properties.',
   inputSchema: {
     type: 'object' as const,
     properties: {

@@ -55,3 +55,28 @@ export function queryBlock(sql: string, params: unknown[] = []): BlockRow | unde
   const stmt = database.prepare(sql);
   return stmt.get(...params) as BlockRow | undefined;
 }
+
+export interface CollectionRow {
+  id: string;
+  name: string | null;
+  schema: string | null;
+  description: string | null;
+  parent_id: string | null;
+  alive: number;
+}
+
+export function queryCollection(collectionId: string): CollectionRow | undefined {
+  const database = getDatabase();
+  const normalizedId = collectionId.replace(/-/g, '');
+
+  const sql = `
+    SELECT id, name, schema, description, parent_id, alive
+    FROM collection
+    WHERE (id = ? OR REPLACE(id, '-', '') = ?)
+      AND alive = 1
+    LIMIT 1
+  `;
+
+  const stmt = database.prepare(sql);
+  return stmt.get(collectionId, normalizedId) as CollectionRow | undefined;
+}
