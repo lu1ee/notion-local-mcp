@@ -1,6 +1,6 @@
 {
   "name": "@lulee/notion-local-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for searching Notion local cache (SQLite) - Fast, offline, no API limits",
   "type": "module",
   "main": "dist/index.js",
