@@ -1,5 +1,5 @@
 {
-  "name": "@lu1ee/notion-local-mcp",
+  "name": "@lulee/notion-local-mcp",
   "version": "1.0.0",
   "description": "MCP server for searching Notion local cache (SQLite) - Fast, offline, no API limits",
   "type": "module",
@@ -33,11 +33,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lu1ee/notion-local-mcp.git"
+    "url": "https://github.com/lulee/notion-local-mcp.git"
   },
-  "homepage": "https://github.com/lu1ee/notion-local-mcp#readme",
+  "homepage": "https://github.com/lulee/notion-local-mcp#readme",
   "bugs": {
-    "url": "https://github.com/lu1ee/notion-local-mcp/issues"
+    "url": "https://github.com/lulee/notion-local-mcp/issues"
   },
   "engines": {
     "node": ">=18.0.0"

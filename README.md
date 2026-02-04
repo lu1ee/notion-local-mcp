@@ -14,7 +14,7 @@ Notion 데스크탑 앱의 로컬 SQLite 캐시를 읽어 Claude에서 빠르게
 터미널에서 아래 명령어를 실행하면 자동으로 설정됩니다:
 
 ```bash
-npx @lu1ee/notion-local-mcp setup
+npx @lulee/notion-local-mcp setup
 ```
 
 ```
@@ -152,7 +152,7 @@ Claude Desktop 또는 Claude Code를 재시작하면 사용할 수 있습니다.
   "mcpServers": {
     "notion-local": {
       "command": "npx",
-      "args": ["-y", "@lu1ee/notion-local-mcp"],
+      "args": ["-y", "@lulee/notion-local-mcp"],
       "env": {
         "NOTION_DB_PATH": "/Users/YOUR_USERNAME/Library/Application Support/Notion/notion.db"
       }
@@ -171,7 +171,7 @@ Claude Desktop 또는 Claude Code를 재시작하면 사용할 수 있습니다.
     "notion-local": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@lu1ee/notion-local-mcp"],
+      "args": ["-y", "@lulee/notion-local-mcp"],
       "env": {
         "NOTION_DB_PATH": "/Users/YOUR_USERNAME/Library/Application Support/Notion/notion.db"
       }
@@ -187,7 +187,7 @@ Claude Desktop 또는 Claude Code를 재시작하면 사용할 수 있습니다.
 로컬에서 개발하려면:
 
 ```bash
-git clone https://github.com/lu1ee/notion-local-mcp.git
+git clone https://github.com/lulee/notion-local-mcp.git
 cd notion-local-mcp
 npm install
 npm run build

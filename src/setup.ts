@@ -40,7 +40,7 @@ export function checkNotionInstalled(p: Platform = getPlatform()): { installed: 
 export function generateMcpConfig(notionDbPath: string): McpServerConfig {
   return {
     command: 'npx',
-    args: ['-y', '@lu1ee/notion-local-mcp'],
+    args: ['-y', '@lulee/notion-local-mcp'],
     env: {
       NOTION_DB_PATH: notionDbPath,
     },

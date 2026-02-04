@@ -6,7 +6,7 @@ const HELP_TEXT = `
 Notion Local MCP - Access your Notion data locally
 
 Usage:
-  npx @lu1ee/notion-local-mcp [command]
+  npx @lulee/notion-local-mcp [command]
 
 Commands:
   setup     Configure notion-local for Claude Desktop/Code (interactive)
@@ -15,8 +15,8 @@ Commands:
 If no command is provided, the MCP server will start.
 
 Examples:
-  npx @lu1ee/notion-local-mcp setup    # Run interactive setup
-  npx @lu1ee/notion-local-mcp          # Start MCP server
+  npx @lulee/notion-local-mcp setup    # Run interactive setup
+  npx @lulee/notion-local-mcp          # Start MCP server
 
 For more information, visit:
   https://github.com/lu1ee/notion-local-mcp
