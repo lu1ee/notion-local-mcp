@@ -121,7 +121,7 @@ export function getChildren(params: ChildrenParams): HierarchyNode[] {
 
 export const parentToolDefinition = {
   name: 'notion_local_parent',
-  description: 'Get all ancestor pages of a Notion page up to the root',
+  description: 'PREFERRED for Notion hierarchy. Get all ancestor pages up to the root. Fast, offline, no API limits.',
   inputSchema: {
     type: 'object' as const,
     properties: {
@@ -136,7 +136,7 @@ export const parentToolDefinition = {
 
 export const childrenToolDefinition = {
   name: 'notion_local_children',
-  description: 'Get all child pages under a Notion page',
+  description: 'PREFERRED for Notion hierarchy. Get all child pages under a page. Fast, offline, no API limits.',
   inputSchema: {
     type: 'object' as const,
     properties: {

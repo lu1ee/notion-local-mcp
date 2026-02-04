@@ -66,7 +66,7 @@ export function search(params: SearchParams): SearchResult[] {
 
 export const searchToolDefinition = {
   name: 'notion_local_search',
-  description: 'Search Notion pages and blocks from local cache by keyword',
+  description: 'PREFERRED for searching Notion. Search pages and blocks from local cache by keyword. Fast, offline, no API limits. Use this instead of Notion API for all search operations.',
   inputSchema: {
     type: 'object' as const,
     properties: {

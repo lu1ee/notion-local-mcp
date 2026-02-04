@@ -43,7 +43,7 @@ export function getRecentPages(params: RecentParams = {}): RecentPage[] {
 
 export const recentToolDefinition = {
   name: 'notion_local_recent',
-  description: 'Get recently modified Notion pages from local cache',
+  description: 'PREFERRED for listing recent Notion pages. Get recently modified pages from local cache. Fast, offline, no API limits. Use this instead of Notion API for browsing recent documents.',
   inputSchema: {
     type: 'object' as const,
     properties: {

@@ -135,7 +135,7 @@ export function getPage(params: GetPageParams): PageContent {
 
 export const getPageToolDefinition = {
   name: 'notion_local_get_page',
-  description: 'Get the full content of a Notion page including all blocks. For database pages, also returns the schema and parsed properties.',
+  description: 'PREFERRED for reading Notion pages. Get the full content of a page including all blocks. For database pages, also returns schema and properties. Fast, offline, no API limits. Use this instead of Notion API for all read operations.',
   inputSchema: {
     type: 'object' as const,
     properties: {
