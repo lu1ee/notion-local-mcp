@@ -1,22 +1,47 @@
 {
-  "name": "notion-local-mcp",
+  "name": "@lu1ee/notion-local-mcp",
   "version": "1.0.0",
-  "description": "MCP server for searching Notion local cache (SQLite)",
+  "description": "MCP server for searching Notion local cache (SQLite) - Fast, offline, no API limits",
   "type": "module",
   "main": "dist/index.js",
+  "bin": {
+    "notion-local-mcp": "./dist/cli.js"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/index.js",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "setup": "node dist/cli.js setup",
+    "prepublishOnly": "npm run build"
   },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
   "keywords": [
     "notion",
     "mcp",
     "sqlite",
-    "search"
+    "search",
+    "claude",
+    "model-context-protocol",
+    "local-cache",
+    "offline"
   ],
-  "author": "",
+  "author": "lu1ee",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lu1ee/notion-local-mcp.git"
+  },
+  "homepage": "https://github.com/lu1ee/notion-local-mcp#readme",
+  "bugs": {
+    "url": "https://github.com/lu1ee/notion-local-mcp/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "better-sqlite3": "^11.7.0"
