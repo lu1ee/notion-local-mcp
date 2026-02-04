@@ -1,15 +1,22 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
-import { dirname } from 'path';
+import { homedir } from 'os';
+import { dirname, join } from 'path';
 import * as readline from 'readline';
 import {
   getPlatform,
   getNotionDbPath,
   getClaudeDesktopConfigPath,
   getClaudeCodeConfigPath,
+  getMainScriptPath,
   PLATFORM_NAMES,
   isOfficiallySupported,
   type Platform,
 } from './paths.js';
+import {
+  resolveNodePaths,
+  buildExtendedPath,
+  validateNode,
+} from './node-resolver.js';
 
 interface McpServerConfig {
   command: string;
@@ -36,14 +43,58 @@ export function checkNotionInstalled(p: Platform = getPlatform()): { installed: 
 
 /**
  * Generate MCP server configuration
+ * Uses absolute paths for Node.js to work in GUI apps that don't inherit terminal PATH
  */
-export function generateMcpConfig(notionDbPath: string): McpServerConfig {
+export function generateMcpConfig(notionDbPath: string, p: Platform = getPlatform()): McpServerConfig {
+  const { nodePath, npxPath } = resolveNodePaths(p);
+  const extendedPath = buildExtendedPath(p);
+  const home = homedir();
+
+  // Build environment variables
+  const env: Record<string, string> = {
+    NOTION_DB_PATH: notionDbPath,
+    PATH: extendedPath,
+  };
+
+  // Add version manager environment variables for compatibility
+  const nvmDir = join(home, '.nvm');
+  if (existsSync(nvmDir)) {
+    env.NVM_DIR = nvmDir;
+  }
+
+  const voltaHome = join(home, '.volta');
+  if (existsSync(voltaHome)) {
+    env.VOLTA_HOME = voltaHome;
+  }
+
+  // Strategy 1: Direct execution with absolute node path (preferred)
+  // This is the most reliable for GUI apps
+  if (nodePath && validateNode(nodePath)) {
+    const scriptPath = getMainScriptPath();
+    if (existsSync(scriptPath)) {
+      return {
+        command: nodePath,
+        args: [scriptPath],
+        env,
+      };
+    }
+  }
+
+  // Strategy 2: npx with absolute path
+  if (npxPath && existsSync(npxPath)) {
+    return {
+      command: npxPath,
+      args: ['-y', '@lulee/notion-local-mcp'],
+      env,
+    };
+  }
+
+  // Strategy 3: Fallback to npx with extended PATH
+  // This relies on the PATH environment variable being set correctly
   return {
     command: 'npx',
     args: ['-y', '@lulee/notion-local-mcp'],
-    env: {
-      NOTION_DB_PATH: notionDbPath,
-    },
+    env,
   };
 }
 
@@ -191,6 +242,19 @@ export async function runSetup(): Promise<void> {
   }
 
   console.log(`✅ Notion found: ${dbPath}`);
+  console.log('');
+
+  // Detect Node.js installation
+  console.log('🔍 Detecting Node.js installation...');
+  const { nodePath, npxPath } = resolveNodePaths(p);
+  if (nodePath) {
+    console.log(`✅ Node.js found: ${nodePath}`);
+  } else if (npxPath) {
+    console.log(`⚠️  Node.js not found, but npx found: ${npxPath}`);
+  } else {
+    console.log('⚠️  Node.js not detected automatically.');
+    console.log('   Configuration will include extended PATH for compatibility.');
+  }
   console.log('');
 
   // Ask which apps to configure

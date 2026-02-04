@@ -118,7 +118,7 @@ export function formatNotionId(id: string): string {
  */
 export function createNotionUrl(pageId: string): string {
   const cleanId = pageId.replace(/-/g, '');
-  return `notion://www.notion.so/${cleanId}`;
+  return `https://notion.so/${cleanId}`;
 }
 
 /**
@@ -280,4 +280,14 @@ export function formatSchemaForDisplay(schema: ParsedSchema | null): Record<stri
   }
 
   return result;
+}
+
+/**
+ * Truncate text to a maximum length with ellipsis
+ */
+export function truncateText(text: string, maxLength: number): string {
+  if (text.length <= maxLength) {
+    return text;
+  }
+  return text.slice(0, maxLength) + '…';
 }

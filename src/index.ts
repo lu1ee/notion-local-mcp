@@ -8,7 +8,7 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 
 import { closeDatabase } from './database.js';
-import { search, searchToolDefinition } from './tools/search.js';
+import { search, formatSearchResults, searchToolDefinition } from './tools/search.js';
 import { getRecentPages, recentToolDefinition } from './tools/recent.js';
 import { getPage, getPageToolDefinition } from './tools/getPage.js';
 import {
@@ -51,9 +51,17 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     let result: unknown;
 
     switch (name) {
-      case 'notion_local_search':
-        result = search(args as unknown as Parameters<typeof search>[0]);
-        break;
+      case 'notion_local_search': {
+        const searchResults = search(args as unknown as Parameters<typeof search>[0]);
+        return {
+          content: [
+            {
+              type: 'text',
+              text: formatSearchResults(searchResults),
+            },
+          ],
+        };
+      }
 
       case 'notion_local_recent':
         result = getRecentPages(args as unknown as Parameters<typeof getRecentPages>[0]);
@@ -79,7 +87,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       content: [
         {
           type: 'text',
-          text: JSON.stringify(result, null, 2),
+          text: JSON.stringify(result),
         },
       ],
     };

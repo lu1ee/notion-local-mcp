@@ -14,7 +14,7 @@ export interface RecentParams {
 }
 
 export function getRecentPages(params: RecentParams = {}): RecentPage[] {
-  const { limit = 20, days = 30 } = params;
+  const { limit = 10, days = 30 } = params;
 
   // Calculate cutoff time (days ago from now)
   const cutoffTime = Date.now() - days * 24 * 60 * 60 * 1000;
@@ -49,7 +49,7 @@ export const recentToolDefinition = {
     properties: {
       limit: {
         type: 'number',
-        description: 'Maximum number of pages to return (default: 20)',
+        description: 'Maximum number of pages to return (default: 10)',
       },
       days: {
         type: 'number',

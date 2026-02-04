@@ -78,6 +78,13 @@ export function getPackageDir(): string {
 }
 
 /**
+ * Get the path to the main MCP server script
+ */
+export function getMainScriptPath(): string {
+  return join(getPackageDir(), 'dist', 'index.js');
+}
+
+/**
  * Platform display names
  */
 export const PLATFORM_NAMES: Record<Platform, string> = {

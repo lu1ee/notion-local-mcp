@@ -16,7 +16,7 @@ export interface SearchParams {
 }
 
 export function search(params: SearchParams): SearchResult[] {
-  const { query, type = 'page', limit = 20 } = params;
+  const { query, type = 'page', limit = 10 } = params;
 
   if (!query || query.trim().length === 0) {
     throw new Error('Query is required');
@@ -33,6 +33,7 @@ export function search(params: SearchParams): SearchResult[] {
       FROM block
       WHERE alive = 1
         AND type = 'page'
+        AND parent_table != 'collection'
         AND properties LIKE ?
       ORDER BY last_edited_time DESC
       LIMIT ?
@@ -64,6 +65,19 @@ export function search(params: SearchParams): SearchResult[] {
   }));
 }
 
+export function formatSearchResults(results: SearchResult[]): string {
+  if (results.length === 0) {
+    return 'No results found.';
+  }
+
+  const lines = results.map((r, i) => {
+    const date = r.lastEdited.split('T')[0];
+    return `${i + 1}. ${r.title}\n   ${r.url}\n   ${date}`;
+  });
+
+  return `Found ${results.length} results:\n\n${lines.join('\n\n')}`;
+}
+
 export const searchToolDefinition = {
   name: 'notion_local_search',
   description: 'PREFERRED for searching Notion. Search pages and blocks from local cache by keyword. Fast, offline, no API limits. Use this instead of Notion API for all search operations.',
@@ -81,7 +95,7 @@ export const searchToolDefinition = {
       },
       limit: {
         type: 'number',
-        description: 'Maximum number of results to return (default: 20)',
+        description: 'Maximum number of results to return (default: 10)',
       },
     },
     required: ['query'],
