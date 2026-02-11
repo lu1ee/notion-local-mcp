@@ -1,4 +1,4 @@
-import Database from 'better-sqlite3';
+import { execSync } from 'child_process';
 import { homedir } from 'os';
 import { join } from 'path';
 
@@ -7,31 +7,53 @@ const DEFAULT_DB_PATH = join(
   'Library/Application Support/Notion/notion.db'
 );
 
-let db: Database.Database | null = null;
+const DB_PATH = process.env.NOTION_DB_PATH || DEFAULT_DB_PATH;
 
-export function getDatabase(): Database.Database {
-  if (db) {
-    return db;
+function escapeValue(value: unknown): string {
+  if (value === null || value === undefined) return 'NULL';
+  if (typeof value === 'number') return String(value);
+  return `'${String(value).replace(/'/g, "''")}'`;
+}
+
+function bindParams(sql: string, params: unknown[]): string {
+  let idx = 0;
+  return sql.replace(/\?/g, () => escapeValue(params[idx++]));
+}
+
+function runQuery(sql: string, params: unknown[] = []): unknown[] {
+  const boundSql = bindParams(sql, params);
+  try {
+    const output = execSync('sqlite3 -json -readonly "${DB_PATH}"', {
+      input: boundSql,
+      encoding: 'utf-8',
+      maxBuffer: 10 * 1024 * 1024,
+      env: { ...process.env, DB_PATH },
+      shell: '/bin/bash',
+    });
+    const trimmed = output.trim();
+    if (!trimmed) return [];
+    return JSON.parse(trimmed);
+  } catch (err: unknown) {
+    const error = err as { stderr?: string; status?: number };
+    if (error.stderr?.includes('no such table')) {
+      throw new Error(`Database table not found: ${error.stderr.trim()}`);
+    }
+    if (error.status === 1 && !error.stderr?.trim()) {
+      // Empty result set
+      return [];
+    }
+    throw new Error(`sqlite3 query failed: ${error.stderr?.trim() || 'unknown error'}`);
   }
+}
 
-  const dbPath = process.env.NOTION_DB_PATH || DEFAULT_DB_PATH;
-
-  db = new Database(dbPath, {
-    readonly: true,
-    fileMustExist: true,
-  });
-
-  // Handle busy database (Notion might be using it)
-  db.pragma('busy_timeout = 5000');
-
-  return db;
+export function getDatabase(): { readonly: true } {
+  // Verify database is accessible
+  runQuery('SELECT 1');
+  return { readonly: true };
 }
 
 export function closeDatabase(): void {
-  if (db) {
-    db.close();
-    db = null;
-  }
+  // No-op: sqlite3 CLI doesn't maintain a persistent connection
 }
 
 export interface BlockRow {
@@ -45,15 +67,12 @@ export interface BlockRow {
 }
 
 export function queryBlocks(sql: string, params: unknown[] = []): BlockRow[] {
-  const database = getDatabase();
-  const stmt = database.prepare(sql);
-  return stmt.all(...params) as BlockRow[];
+  return runQuery(sql, params) as BlockRow[];
 }
 
 export function queryBlock(sql: string, params: unknown[] = []): BlockRow | undefined {
-  const database = getDatabase();
-  const stmt = database.prepare(sql);
-  return stmt.get(...params) as BlockRow | undefined;
+  const rows = runQuery(sql, params);
+  return (rows[0] as BlockRow) ?? undefined;
 }
 
 export interface CollectionRow {
@@ -66,7 +85,6 @@ export interface CollectionRow {
 }
 
 export function queryCollection(collectionId: string): CollectionRow | undefined {
-  const database = getDatabase();
   const normalizedId = collectionId.replace(/-/g, '');
 
   const sql = `
@@ -77,6 +95,6 @@ export function queryCollection(collectionId: string): CollectionRow | undefined
     LIMIT 1
   `;
 
-  const stmt = database.prepare(sql);
-  return stmt.get(collectionId, normalizedId) as CollectionRow | undefined;
+  const rows = runQuery(sql, [collectionId, normalizedId]);
+  return (rows[0] as CollectionRow) ?? undefined;
 }
